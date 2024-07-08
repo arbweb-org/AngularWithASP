@@ -1,0 +1,68 @@
+<div style="text-align:center; margin-left:10vw; margin-right:10vw">
+  <h1>Users</h1>
+  <p *ngIf="busy"><em>Loading...</em></p>
+
+  <div style="text-align: right; margin-bottom: 8px">
+    <kendo-button (click)="Add()">+ New User</kendo-button>
+  </div>
+
+  <kendo-grid [data]="gridView"
+              [pageSize]="pageSize"
+              [skip]="users.Skip"
+              [pageable]="{
+              info: info,
+              previousNext: previousNext
+              }"
+              (pageChange)="pageChange($event)">
+    <kendo-grid-column field="FirstName" title="First Name"></kendo-grid-column>
+    <kendo-grid-column field="LastName" title="Last Name"></kendo-grid-column>
+    <kendo-grid-column field="Email" title="Email"></kendo-grid-column>
+    <kendo-grid-column title="Actions">
+      <ng-template kendoGridCellTemplate let-dataItem let-rowIndex="rowIndex">
+        <a href="#" (click)="Modify(dataItem.Id)">Modify</a>
+        &nbsp;&nbsp;
+        <a href="#" (click)="Delete(dataItem.Id)" style="color: red">Delete</a>
+      </ng-template>
+    </kendo-grid-column>
+  </kendo-grid>
+  <br/><br />
+
+  <form *ngIf="editing" #templateForm="ngForm" style="border-width:1px; border-style: solid; border-color: lightgray; padding: 16px">
+    <kendo-label class="k-form" text="First Name">
+      <kendo-textbox [style.width.px]="200"
+                     [style.marginLeft.px]="5"
+                     name="FirstName"
+                     [(ngModel)]="user.FirstName"
+                     [showSuccessIcon]="user.FirstName.length >= 3"
+                     showErrorIcon="initial"
+                     required></kendo-textbox>
+    </kendo-label>
+    &nbsp;&nbsp;
+
+    <kendo-label class="k-form" text="Last Name">
+      <kendo-textbox [style.width.px]="200"
+                     [style.marginLeft.px]="5"
+                     name="LastName"
+                     [(ngModel)]="user.LastName"
+                     [showSuccessIcon]="user.LastName.length >= 3"
+                     showErrorIcon="initial"
+                     required></kendo-textbox>
+    </kendo-label>
+    &nbsp;&nbsp;
+
+    <kendo-label class="k-form" text="Email">
+      <kendo-textbox [style.width.px]="200"
+                     [style.marginLeft.px]="5"
+                     name="Email"
+                     [(ngModel)]="user.Email"
+                     [showSuccessIcon]="user.Email.length >= 3"
+                     showErrorIcon="initial"
+                     required></kendo-textbox>
+    </kendo-label>
+    &nbsp;&nbsp;
+
+    <kendo-button (click)="Save()">Save</kendo-button>
+  </form>
+</div>
+
+<router-outlet />
