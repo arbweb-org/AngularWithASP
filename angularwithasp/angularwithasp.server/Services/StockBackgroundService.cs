@@ -4,8 +4,22 @@ using System.Net.Mail;
 using System.Text.Json;
 namespace angularwithasp.server.Services
 {
+    public enum LogsEnum
+    {
+        StartTime = 0,
+        PolygonResponse = 1,
+        EmailsCount = 2
+    }
+
     public class StockBackgroundService : BackgroundService
     {
+        public static Dictionary<LogsEnum, string> Logs = new Dictionary<LogsEnum, string>
+        {
+            {LogsEnum.StartTime, DateTime.Now.ToString("MM-dd HH:mm:ss")},
+            {LogsEnum.PolygonResponse, "Not yet"},
+            {LogsEnum.EmailsCount, "0"}
+        };
+
         IServiceScopeFactory _service;
         HttpClient client = new HttpClient();
 
@@ -30,7 +44,9 @@ namespace angularwithasp.server.Services
         async Task<string> HTML()
         {
             // For illustration only, the api returns only one daily reslut for free account!
-            DateTime yesterday = DateTime.Today.ToUniversalTime().AddDays(-1);
+            // Also not all days return results! have to choose a fixed day!
+            // DateTime yesterday = DateTime.Today.ToUniversalTime().AddDays(-1); 
+            DateTime yesterday = new DateTime(2024, 7, 7, 0, 0, 0).ToUniversalTime();
             string from = yesterday.AddDays(-1).ToString("yyyy-MM-dd");
             string to = yesterday.ToString("yyyy-MM-dd");
 
@@ -63,6 +79,9 @@ namespace angularwithasp.server.Services
             {
                 var response = await client.GetAsync($"https://api.polygon.io/v2/aggs/ticker/AAPL/range/1/day/{from}/{to}?apiKey=hk7FsLVmBv5fJP_b15cNEszPNF1TcVHr");
                 string json = await response.Content.ReadAsStringAsync();
+
+                Logs[LogsEnum.PolygonResponse] = json;
+
                 Polygon polygon = JsonSerializer.Deserialize<Polygon>(json);
                 Result result = polygon.results[0];
 
@@ -95,24 +114,25 @@ namespace angularwithasp.server.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 string[] addresses = await Addresses();
+
+                Logs[LogsEnum.EmailsCount] = addresses.Length.ToString();
+
                 string html = await HTML();
 
-                if (string.IsNullOrEmpty(html))
+                if (!string.IsNullOrEmpty(html))
                 {
-                    continue;
-                }
+                    mailMessage.Body = html;
 
-                mailMessage.Body = await HTML();
-
-                foreach (string recipient in addresses)
-                {
-                    mailMessage.To.Clear();
-                    mailMessage.To.Add(recipient);
-                    try
+                    foreach (string recipient in addresses)
                     {
-                        smtpClient.Send(mailMessage);
+                        mailMessage.To.Clear();
+                        mailMessage.To.Add(recipient);
+                        try
+                        {
+                            smtpClient.Send(mailMessage);
+                        }
+                        catch { }
                     }
-                    catch { }
                 }
 
                 await Task.Delay(6 * 60 * 60 * 1000, stoppingToken);

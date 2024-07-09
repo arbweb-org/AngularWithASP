@@ -1,5 +1,6 @@
 ﻿using angularwithasp.server.Data;
 using angularwithasp.server.Models;
+using angularwithasp.server.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -82,6 +83,17 @@ namespace angularwithasp.server.Controllers
             dbx.SaveChanges();
 
             return string.Empty;
+        }
+
+        [HttpGet("logs")]
+        public string Logs(long id)
+        {
+            return
+                "<html><body>" +
+                "Start time: <br/>" + StockBackgroundService.Logs[LogsEnum.StartTime] + "<br/>" +
+                "Polygon response: <br/>" + StockBackgroundService.Logs[LogsEnum.PolygonResponse] + "<br/>" +
+                "Emails count: <br/>" + StockBackgroundService.Logs[LogsEnum.EmailsCount] +
+                "</body></html>";
         }
     }
 }
