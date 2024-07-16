@@ -1,6 +1,6 @@
 ﻿namespace angularwithasp.server.Models
 {
-    public class UserDTO
+    public class Page
     {
         public User[] Users { get; set; }
         public int Skip { get; set; }

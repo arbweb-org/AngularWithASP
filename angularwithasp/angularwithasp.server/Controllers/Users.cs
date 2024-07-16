@@ -18,22 +18,22 @@ namespace angularwithasp.server.Controllers
         }
 
         [HttpGet("get")]
-        public UserDTO Get([FromQuery] int skip, [FromQuery] int take)
+        public Page Get([FromQuery] int skip, [FromQuery] int take)
         {
-            UserDTO userDTO = new UserDTO();
+            Page page = new Page();
 
-            userDTO.Total = (from User item in dbx.Users
-                             select item).Count();
+            page.Total = (from User item in dbx.Users
+                          select item).Count();
 
-            if (userDTO.Total > skip)
+            if (page.Total > skip)
             {
-                userDTO.Skip = skip;
+                page.Skip = skip;
             }
 
-            userDTO.Users = (from User item in dbx.Users
-                             select item).Skip(userDTO.Skip).Take(take).ToArray();
+            page.Users = (from User item in dbx.Users
+                          select item).Skip(page.Skip).Take(take).ToArray();
 
-            return userDTO;
+            return page;
         }
 
         [HttpGet("add")]
